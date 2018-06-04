@@ -1,7 +1,6 @@
 var db = require('../control/db.js');
-const bcrypt = require('bcrypt');
-var path = require('path');
 
+var path = require('path');
 
 module.exports = function(app){
     
@@ -14,21 +13,31 @@ module.exports = function(app){
     });
 
     app.post('/', (req,res)=>{
-        var data = {};
-        data = { "username":req.body.name,
-                 "password":hash(req.body.password),
-                 "email":req.body.email };
-        console.log(data);
-        db.addUser(data);
+        let account = {};
+        account = { 
+            "username":req.body.name,
+            "password":req.body.password,
+            "email":req.body.email 
+        };
+        
+        db.addUser(account);
         
         res.sendFile(path.resolve(__dirname,'..') + '/public/index.html');
     });
 
-    function hash(myPassword){
-        const saltRounds = 10;
-        bcrypt.hash(myPassword,saltRounds).then(function (hash) {
-            console.log(hash);
-            return hash;
+    app.post('/dashboard', (req,res)=>{
+        let account = {};
+        account = {
+            "username":req.body.name,
+            "password":req.body.password
+        };
+        db.validUser(account,function(m){
+            if (m.indexOf("successfully")){
+                res.sendFile(path.resolve(__dirname,'..') + '/public/dashboard.html');
+            }
+            else{
+                res.send(m);
+            }
         });
-    }
+    });
 }
